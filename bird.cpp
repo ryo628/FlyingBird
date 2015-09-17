@@ -6,73 +6,7 @@
 #include<stdio.h>
 #include<math.h>
 #include "DxLib.h"
-
-/* 【構造体型】 */
-//画像データ
-typedef struct	
-{
-	int Back, Title, Title_Start, Title_Menu, Title_Option;
-	int Pause;
-	int Cursor, KeyBack, Space;
-	int Level, Star, Memory;
-	int GameOver, GameClear;
-
-	int Bird[4];
-}grData;
-
-//音データ
-typedef struct	
-{
-	int Start, Select, Decide, Back;
-	int KeyPush;
-	int Space;
-	int LvUp;
-	int GameOver, GameClear;
-}seData;
-
- //二次元座標
-typedef struct
-{
-	int x, y;
-}Position;
-
-//自キャラ変数
-typedef struct
-{
-	Position c;
-	int lv;
-}Bird;
-
- //アイテム変数
-typedef struct
-{
-	//座標
-	Position o;
-	//高さ
-	int height;
-	//存在判定
-	int flag;
-
-}Object;
-
-/* 【列挙型】 */
-enum eScene		//場面
-{
-	TITLE,
-	OPNING,
-	SELECT,
-	MAINGAME,
-	PAUSE,
-	GAMEOVER,
-	GAMECLEAR
-};
-
-enum eTitle		//タイトル場面
-{
-	START,
-	MENU,
-	OPTION
-};
+#include "struct.h"
 
 /* 【グローバル変数】 */
 grData grp = {0};		//画像データ
@@ -445,6 +379,12 @@ void ItemCot(Object *o,int time)
 			//消す
 			o->flag = 0;
 		}
+
+		//泡消し判定
+		if (false)
+		{
+
+		}
 	}
 	//アイテムが存在しない時
 	if (o->flag == 0)
@@ -545,7 +485,8 @@ void MainGame_Draw(Bird *b, Object *o,int time)
 	DrawExtendGraph(b->c.x, b->c.y, b->c.x + 49, b->c.y + 49, grp.Bird[c_mode], true);
 
 	//アイテム表示
-	DrawExtendGraph(o->o.x, o->o.y, o->o.x + 29, o->o.y+29, grp.Bird[1], true);
+	DrawCircle(o->o.x + 15, o->o.y + 15, 40, 40, GetColor(255, 0, 0), TRUE);	//泡
+	DrawExtendGraph(o->o.x, o->o.y, o->o.x + 29, o->o.y+29, grp.Bird[1], true);	//餌
 
 	//時間表示
 	DrawFormatString( 286, 440, GetColor( 255, 255, 255 ), "%d", time / 60000 );	

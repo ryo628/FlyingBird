@@ -1,9 +1,9 @@
-﻿2015/09/07 12:56:04 にビルドを開始しました。
+﻿2015/09/17 12:04:43 にビルドを開始しました。
      1>ノード 2 上のプロジェクト "C:\Users\角涼太朗\Documents\GitHub\FlyingBird\FlyingBird.vcxproj" (Build ターゲット)。
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /I"E:\DxLib_VC\プロジェクトに追加すべきファイル_VC用" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _MBCS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt bird.cpp
          bird.cpp
-     1>c:\users\角涼太朗\documents\github\flyingbird\bird.cpp(330): warning C4800: 'bool *': ブール値を 'true' または 'false' に強制的に設定します (警告の処理)
+     1>c:\users\角涼太朗\documents\github\flyingbird\bird.cpp(264): warning C4800: 'bool *': ブール値を 'true' または 'false' に強制的に設定します (警告の処理)
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\角涼太朗\Documents\GitHub\FlyingBird\Debug\FlyingBird.exe" /INCREMENTAL /NOLOGO /LIBPATH:"E:\DxLib_VC\プロジェクトに追加すべきファイル_VC用" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Users\角涼太朗\Documents\GitHub\FlyingBird\Debug\FlyingBird.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\角涼太朗\Documents\GitHub\FlyingBird\Debug\FlyingBird.lib" /MACHINE:X86 Debug\bird.obj
          FlyingBird.vcxproj -> C:\Users\角涼太朗\Documents\GitHub\FlyingBird\Debug\FlyingBird.exe
@@ -11,4 +11,4 @@
 
 ビルドに成功しました。
 
-経過時間 00:00:02.64
+経過時間 00:00:01.72
