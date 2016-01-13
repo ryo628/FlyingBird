@@ -30,8 +30,12 @@ typedef struct
 //自キャラ変数
 typedef struct
 {
+	//座標
 	Position c;
+	//レベル
 	int lv;
+	//餌の持ち数
+	int bug;
 }Bird;
 
 //アイテム変数
@@ -42,8 +46,9 @@ typedef struct
 	//高さ
 	int height;
 	//存在判定
-	int flag;
-
+	int exist_flag;
+	// 風船存在判定
+	int baloon_flag;
 }Object;
 
 /* 【列挙型】 */

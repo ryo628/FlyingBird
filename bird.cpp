@@ -1,12 +1,18 @@
-//	ゲーム作り基盤
+//	Flying_Bird (仮)
 //
-//	高田亮介	と		角涼太朗
+//	bonochof と @ryo_628
 //
 
 #include<stdio.h>
 #include<math.h>
 #include "DxLib.h"
 #include "struct.h"
+
+//各種定数
+#define CHARA_X 50
+#define CHARA_Y 50
+#define ITEM_X 30
+#define ITEM_Y 30
 
 /* 【グローバル変数】 */
 grData grp = {0};		//画像データ
@@ -26,11 +32,14 @@ void InitBird(Bird *b);								//変数初期化
 void InitObj(Object *o);							//アイテム初期化
 void Title(bool *winMode);							//場面：タイトル
 void Title_Draw(int, int);							//描画：タイトル
+
 void Opening();
 void Maingame(Bird *b, Object *o,int *starttime);	//場面：メインゲーム
 void ItemCot(Object *o, int time);					//アイテム制御
 void MainGameMove(Bird *b);							//場面：メインゲーム
 void ItemGet(Bird *b, Object *o);					//アイテム入手
+int CalcDistance(Position, Position);				//二点間距離計算
+
 void MainGame_Draw(Bird *b, Object *o, int time);	//描画：メインゲーム
 void Pause();										//場面：ポーズ
 void Gameover();									//場面：ゲームオーバー
@@ -57,7 +66,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	//ウィンドウモードで起動
 	ChangeWindowMode(winMode);
 	//ＤＸライブラリ初期化処理
-	if (DxLib_Init() == -1)return -1;
+	if (DxLib_Init() == -1) return -1;
 
 	//画像データのロード
 	InitGrp();
@@ -106,9 +115,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		//裏画面出力
 		ScreenFlip();		
 
-		//カウント
-		loopcount++;		
-		loopcount = loopcount % 1000;
+		//カウント		
+		loopcount = loopcount++ % 1000;
 	}
 
 	//DXライブラリ終了処理
@@ -116,7 +124,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	return 0;
 }
 
-/* 【関数】画像読み込み */
+/* 画像読み込み */
 void InitGrp()
 {
 	//裏画面設定
@@ -147,7 +155,7 @@ void InitGrp()
 	LoadDivGraph("Data/Graphic/bird.png", 4, 4, 1, 300, 300, grp.Bird);
 }
 
-/* 【関数】音読み込み */
+/* 音読み込み */
 void InitSe()
 {
 	se.Start = LoadSoundMem( "Data/Sound/start.wav" );
@@ -163,14 +171,14 @@ void InitSe()
 	se.GameClear = LoadSoundMem( "Data/Sound/gameclear.wav" );
 }
 
-/* 【関数】入力 */
+/* 入力 */
 void Input()
 {
 	//すべてのキー情報を取得
 	GetHitKeyStateAll( Key );	
 }
 
-/* 【関数】スクリーンモード切り替え */
+/* スクリーンモード切り替え */
 void Fullscreen(bool num)
 {	
 	num = !num;
@@ -178,7 +186,7 @@ void Fullscreen(bool num)
 	InitGrp();
 }
 
-/* 【関数】各種変数初期化*/
+/* 各種変数初期化*/
 //自キャラ初期化
 void InitBird(Bird *b)
 {
@@ -186,6 +194,7 @@ void InitBird(Bird *b)
 	b->c.x = 320;
 	b->c.y = 240;
 	b->lv = 1;
+	b->bug = 0;
 }
 
 //アイテム初期化
@@ -194,10 +203,11 @@ void InitObj(Object *o)
 	//変数初期化
 	o->height = 0;
 	o->o.y = 0;
-	o->flag = 0;
+	o->exist_flag = 0;
+	o->baloon_flag = 1;
 }
 
-/* 【関数】タイトル */
+/* タイトル */
 void Title(bool *winMode)
 {
 	//タイトルでの場面
@@ -299,7 +309,7 @@ void Title(bool *winMode)
 	Title_Draw( titlescene, menu );		
 }
 
-/* 【関数】タイトル描画 */
+/* タイトル描画 */
 void Title_Draw( int titlescene, int menu )
 {
 	//壁紙
@@ -327,12 +337,13 @@ void Title_Draw( int titlescene, int menu )
 		DrawGraph( 450, 250 + (45 * menu), grp.Cursor, true );	
 }
 
+/* オープニング演出 */
 void Opening()
 {
 
 }
 
-/* 【関数】メインゲーム */
+/* メインゲーム */
 void Maingame(Bird *b,Object *o,int *starttime)
 {
 	//時間計算
@@ -356,47 +367,52 @@ void Maingame(Bird *b,Object *o,int *starttime)
 void ItemCot(Object *o,int time)
 {
 	//存在する時
-	if (o->flag != 0)
+	if (o->exist_flag != 0)
 	{
-		//流される
-		o->o.x -- ;
-
-		//ぷかぷか
-		if (o->flag % 2 == 1)
+		//泡ある時
+		if (o->baloon_flag == 1)
 		{
-			o->o.y-=2;
-			if (o->o.y <= o->height - 150)o->flag++;
+			//流される
+			o->o.x--;
+
+			//ぷかぷか
+			if (o->exist_flag % 2 == 1)
+			{
+				o->o.y -= 2;
+				if (o->o.y <= o->height - 150)o->exist_flag++;
+			}
+			else
+			{
+				o->o.y += 2;
+				if (o->o.y >= o->height + 150)o->exist_flag++;
+			}
 		}
+		//泡ない時
 		else
 		{
-			o->o.y+=2;
-			if (o->o.y >= o->height + 150)o->flag++;
+			//落ちる
+			o->o.y++;
 		}
 
 		//画面外に出た時
 		if (o->o.x < 0)
 		{
 			//消す
-			o->flag = 0;
-		}
-
-		//泡消し判定
-		if (false)
-		{
-
+			o->exist_flag = 0;
 		}
 	}
 	//アイテムが存在しない時
-	if (o->flag == 0)
+	if (o->exist_flag == 0)
 	{
 		//乱数
 		if (rand() % 15 < 3)
 		{
 			//座標生成
-			o->flag = 1;
+			o->exist_flag = 1;
 			o->height = 340 - rand() % 100;
 			o->o.y = o->height;
 			o->o.x = 640;
+			o->baloon_flag = 1;
 		}
 	}
 }
@@ -404,13 +420,32 @@ void ItemCot(Object *o,int time)
 //アイテム入手
 void ItemGet(Bird *b, Object *o)
 {
-	if ((b->c.x < (o->o.x + 30) && (b->c.x + 50) > o->o.x) && (b->c.y < (o->o.y + 30) && (b->c.y + 50) > o->o.y))
+	//泡との当たり判定
+	if (CalcDistance(o->o, b->c) < 80) o->baloon_flag = 0;
+	
+	//当たり判定
+	if (o->baloon_flag == 0 && (b->c.x < (o->o.x + 30) && (b->c.x + 50) > o->o.x) && (b->c.y < (o->o.y + 30) && (b->c.y + 50) > o->o.y))
 	{
-		o->flag = 0;
+		o->exist_flag = 0;
+		b->bug++;
 	}
 }
 
-/* 【関数】メインゲーム操作 */
+//2点間距離計算
+int CalcDistance(Position a, Position b)
+{
+	double dis;
+
+	dis = pow(a.x + CHARA_X / 2 - b.x, 2.0) + pow(a.y + CHARA_Y / 2 - b.y, 2.0);
+	dis = sqrt(dis);
+
+	clsDx();
+	printfDx("dis=%f",dis);
+
+	return (int)dis;
+}
+
+/* メインゲーム操作 */
 void MainGameMove(Bird *b)
 {
 	/* 自キャラ移動 */
@@ -450,7 +485,7 @@ void MainGameMove(Bird *b)
 		b->c.x = 500;
 }
 
-/* 【関数】メインゲーム描画 */
+/* メインゲーム描画 */
 void MainGame_Draw(Bird *b, Object *o,int time)
 {
 	//背景表示
@@ -481,19 +516,21 @@ void MainGame_Draw(Bird *b, Object *o,int time)
 	{
 		if (loopcount % 10 == 0) c_mode++;
 	}
+	//羽ばたき
 	c_mode = c_mode % 4;
-	DrawExtendGraph(b->c.x, b->c.y, b->c.x + 49, b->c.y + 49, grp.Bird[c_mode], true);
+	DrawExtendGraph(b->c.x, b->c.y, b->c.x + CHARA_X - 1 , b->c.y + CHARA_Y - 1, grp.Bird[c_mode], true);
 
 	//アイテム表示
-	DrawCircle(o->o.x + 15, o->o.y + 15, 40, 40, GetColor(255, 0, 0), TRUE);	//泡
-	DrawExtendGraph(o->o.x, o->o.y, o->o.x + 29, o->o.y+29, grp.Bird[1], true);	//餌
+	if (o->baloon_flag == 1) DrawCircle(o->o.x + ITEM_X / 2, o->o.y + ITEM_Y / 2, 40, 40, GetColor(255, 0, 0), TRUE);	//泡
+	DrawExtendGraph(o->o.x, o->o.y, o->o.x + ITEM_X - 1, o->o.y + ITEM_Y - 1 , grp.Bird[1], true);	//餌
 
 	//時間表示
-	DrawFormatString( 286, 440, GetColor( 255, 255, 255 ), "%d", time / 60000 );	
-	DrawFormatString( 338, 440, GetColor( 255, 255, 255 ), "%2d", time / 1000 % 60 );
+	DrawFormatString(286, 440, GetColor(255, 255, 255), "%2d:%2d", time / 60000, time / 1000 % 60);
+	
+	DrawFormatString( 10, 40, GetColor( 255, 255, 255 ), "bug=%d", b->bug );
 }
 
-/* 【関数】ポーズ画面 */
+/* ポーズ画面 */
 void Pause()
 {
 	//画面描写
@@ -507,7 +544,7 @@ void Pause()
 	}
 }
 
-/* 【関数】ゲームオーバー */
+/* ゲームオーバー */
 void Gameover()
 {
 	if( Key[ KEY_INPUT_RETURN ] )
@@ -521,7 +558,7 @@ void Gameover()
 	DrawGraph( 0, 0, grp.GameOver, false );
 }
 
-/* 【関数】ゲームクリア */
+/* ゲームクリア */
 void Gameclear()
 {
 	if( Key[ KEY_INPUT_RETURN ] )
@@ -535,7 +572,7 @@ void Gameclear()
 	DrawGraph( 0, 0, grp.GameClear, false );
 }
 
-/* 【関数】音楽再生 */
+/* 音楽再生 */
 void PlayMusic( int select )	//引数：音楽選択画面かどうか
 {
 	if( select )
